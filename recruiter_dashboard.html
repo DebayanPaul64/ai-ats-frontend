@@ -79,9 +79,10 @@
         }
 
         function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            localStorage.removeItem('user_id'); // Clear the ID on logout
+            // This instantly wipes everything (token, role, user_id, and job IDs) in one go
+            localStorage.clear(); 
+    
+            // Redirect back to the login page
             window.location.href = 'index.html';
         }
 
