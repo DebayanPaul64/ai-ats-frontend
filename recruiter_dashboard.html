@@ -81,10 +81,10 @@
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
+            localStorage.removeItem('user_id'); // Clear the ID on logout
             window.location.href = 'index.html';
         }
 
-        // Create a variable to hold our jobs so we don't have to pass text through HTML
         let currentJobs = [];
 
         // 2. Fetch and Display All Jobs
@@ -97,19 +97,33 @@
                 tbody.innerHTML = '';
                 
                 if (response.ok && data.jobs.length > 0) {
-                    currentJobs = data.jobs; // Save the jobs to our variable
+                    currentJobs = data.jobs; 
                     
+                    // Grab the logged-in user's ID
+                    const currentUserId = parseInt(localStorage.getItem('user_id'));
+
                     data.jobs.forEach(job => {
                         const date = new Date(job.created_at).toLocaleDateString();
+                        
+                        // Check if the logged-in user owns this job
+                        let actionButtons = '';
+                        if (job.recruiter_id === currentUserId) {
+                            actionButtons = `
+                                <button class="btn btn-sm btn-success me-1" onclick="viewApplicants(${job.job_id})">View Applicants</button>
+                                <button class="btn btn-sm btn-outline-secondary me-1" onclick="updateJob(${job.job_id})">Edit</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteJob(${job.job_id})">Delete</button>
+                            `;
+                        } else {
+                            actionButtons = `<span class="badge bg-light text-muted border">View Only</span>`;
+                        }
+
                         tbody.innerHTML += `
                             <tr>
                                 <td class="fw-bold">${job.title}</td>
                                 <td>${job.recruiter_name}</td>
                                 <td>${date}</td>
                                 <td class="text-end">
-                                    <button class="btn btn-sm btn-success me-1" onclick="viewApplicants(${job.job_id})">View Applicants</button>
-                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="updateJob(${job.job_id})">Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteJob(${job.job_id})">Delete</button>
+                                    ${actionButtons}
                                 </td>
                             </tr>
                         `;
@@ -153,7 +167,6 @@
 
         // 4. Update a Job
         async function updateJob(jobId) {
-            // Find the specific job in our saved array using the ID
             const jobToUpdate = currentJobs.find(job => job.job_id === jobId);
             
             if (!jobToUpdate) {
@@ -161,12 +174,11 @@
                 return;
             }
 
-            // Now we safely pull the title and description from the array
             const newTitle = prompt("Update Job Title:", jobToUpdate.title);
-            if (newTitle === null) return; // User clicked Cancel
+            if (newTitle === null) return; 
             
             const newDesc = prompt("Update Job Description:", jobToUpdate.description);
-            if (newDesc === null) return; // User clicked Cancel
+            if (newDesc === null) return; 
 
             try {
                 const response = await fetch(`https://debayanpaul64-ai-ats-backend.hf.space/jobs/${jobId}`, {
@@ -212,13 +224,11 @@
             }
         }
 
-        // Placeholder for Session 18
         function viewApplicants(jobId) {
             localStorage.setItem('view_job_id', jobId);
             window.location.href = 'ranking_dashboard.html';
         }
 
-        // Load jobs immediately on page load
         window.onload = loadJobs;
     </script>
 </body>

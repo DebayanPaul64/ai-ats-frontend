@@ -101,9 +101,8 @@
 
     // REGISTRATION LOGIC
     document.getElementById('form-register').addEventListener('submit', async (e) => {
-        e.preventDefault(); // Prevent the page from refreshing
+        e.preventDefault(); 
         
-        // Capture the inputs
         const name = document.getElementById('reg-name').value;
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
@@ -122,7 +121,7 @@
             
             if (response.ok) {
                 alert('Registration successful! Please log in.');
-                toggleForms(); // Switch back to the login view automatically
+                toggleForms(); 
             } else {
                 alert('Error: ' + data.detail);
             }
@@ -139,7 +138,6 @@
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         
-        // Package data as standard form URL encoded (required by OAuth2)
         const formData = new URLSearchParams();
         formData.append('username', email);
         formData.append('password', password);
@@ -159,13 +157,15 @@
                 // 1. Save the token to local storage
                 localStorage.setItem('token', data.access_token);
                 
-                // 2. Decode the JWT to find out if they are a recruiter or candidate
+                // 2. Decode the JWT to find out role and ID
                 const payloadBase64 = data.access_token.split('.')[1];
                 const decodedPayload = JSON.parse(atob(payloadBase64));
                 const userRole = decodedPayload.role;
+                const userId = decodedPayload.sub; // Grab the user ID
                 
-                // 3. Save the role and redirect to the correct dashboard (which we will build next!)
+                // 3. Save the role, id, and redirect
                 localStorage.setItem('role', userRole);
+                localStorage.setItem('user_id', userId); // Save the user ID
                 
                 alert('Login successful! Redirecting...');
                 
